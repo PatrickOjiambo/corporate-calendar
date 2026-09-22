@@ -1,0 +1,52 @@
+"use client"
+
+import Link from "next/link"
+import { useSession, signOut } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+export function UserNav() {
+  const { data: session, status } = useSession()
+
+  if (status === "loading") return null
+
+  if (!session?.user) {
+    return <Button render={<Link href="/login">Sign in</Link>} size="sm" />
+  }
+
+  const { name, role } = session.user
+  const initials = (name ?? "?").slice(0, 2).toUpperCase()
+  const isAdmin = role === "admin" || role === "superadmin"
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" className="gap-2">
+            <Avatar size="sm">
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+            {name}
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>{role}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link href="/submit-event">Submit event</Link>} />
+        <DropdownMenuItem render={<Link href="/my-events">My events</Link>} />
+        {isAdmin && <DropdownMenuItem render={<Link href="/admin">Admin dashboard</Link>} />}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

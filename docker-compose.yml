@@ -19,6 +19,9 @@ services:
       - "3000:3000"
     environment:
       MONGODB_URI: mongodb://mongo:27017/kenyare-calendar
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
+      SEED_SUPERADMIN_EMAIL: ${SEED_SUPERADMIN_EMAIL:-}
+      SEED_SUPERADMIN_PASSWORD: ${SEED_SUPERADMIN_PASSWORD:-}
     depends_on:
       mongo:
         condition: service_healthy

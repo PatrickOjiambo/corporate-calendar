@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
+import { connectToDatabase } from "@/lib/db"
+import { Event } from "@/models/event"
+import { writeAuditLog } from "@/models/audit-log"
+
+export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const session = await auth()
+  const role = session?.user?.role
+  if (role !== "admin" && role !== "superadmin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  await connectToDatabase()
+  const event = await Event.findById(id)
+  if (!event) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
+  event.status = "Approved"
+  event.approvedBy = session!.user.id
+  event.approvedAt = new Date()
+  await event.save()
+
+  await writeAuditLog({
+    entityType: "Event",
+    entityId: event._id,
+    action: "approved",
+    actor: session!.user.id,
+  })
+
+  return NextResponse.json(event)
+}

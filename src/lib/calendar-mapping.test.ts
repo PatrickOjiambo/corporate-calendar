@@ -79,15 +79,24 @@ describe("toEventInput", () => {
     })
   })
 
-  it("falls back to a neutral color class for an unrecognized category", () => {
-    const input = toEventInput(baseEvent({ category: "SomeNewCategory" }))
-    expect(input.className).toBe("bg-slate-500")
+  it("assigns a color class based on the event id, not its category", () => {
+    const input = toEventInput(baseEvent({ _id: "abc123", category: "SomeNewCategory" }))
+    expect(input.className).toMatch(/^bg-/)
   })
 
-  it("assigns a distinct color class per known category", () => {
-    const meeting = toEventInput(baseEvent({ category: "Meeting" }))
-    const deadline = toEventInput(baseEvent({ category: "Deadline" }))
-    expect(meeting.className).not.toBe(deadline.className)
+  it("gives the same event the same color across renders (deterministic, not random each call)", () => {
+    const a = toEventInput(baseEvent({ _id: "evt-42" }))
+    const b = toEventInput(baseEvent({ _id: "evt-42" }))
+    expect(a.className).toBe(b.className)
+  })
+
+  it("gives different events different colors most of the time", () => {
+    const colors = new Set(
+      ["evt-1", "evt-2", "evt-3", "evt-4", "evt-5"].map(
+        (id) => toEventInput(baseEvent({ _id: id })).className
+      )
+    )
+    expect(colors.size).toBeGreaterThan(1)
   })
 
   it("carries the full event through as extendedProps for the detail dialog", () => {

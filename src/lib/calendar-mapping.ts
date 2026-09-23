@@ -2,15 +2,28 @@ import type { EventInput } from "@fullcalendar/core"
 import { addDays } from "date-fns"
 import type { CalendarEvent } from "@/components/events/event-detail-dialog"
 
-export const CATEGORY_CLASS: Record<string, string> = {
-  Meeting: "bg-blue-500",
-  Training: "bg-emerald-500",
-  Workshop: "bg-emerald-500",
-  Conference: "bg-purple-500",
-  "Staff Activity": "bg-amber-500",
-  "Corporate Event": "bg-rose-500",
-  Deadline: "bg-red-600",
-  Other: "bg-slate-500",
+// A palette of distinct, readable colors — one is assigned per event (not
+// per category) so a busy day doesn't turn into a wall of same-colored bars.
+const EVENT_COLORS = [
+  "bg-blue-500",
+  "bg-emerald-500",
+  "bg-purple-500",
+  "bg-amber-500",
+  "bg-rose-500",
+  "bg-cyan-600",
+  "bg-fuchsia-500",
+  "bg-indigo-500",
+  "bg-lime-600",
+  "bg-orange-500",
+  "bg-teal-500",
+  "bg-pink-500",
+]
+
+/** Deterministic per-event color: same event always gets the same color, picked from the palette by hashing its id. */
+function colorForEvent(id: string): string {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0
+  return EVENT_COLORS[Math.abs(hash) % EVENT_COLORS.length]
 }
 
 /**
@@ -29,7 +42,7 @@ export function toEventInput(event: CalendarEvent): EventInput {
     start: event.startAt,
     end: event.allDay ? addDays(new Date(event.endAt), 1) : event.endAt,
     allDay: event.allDay,
-    className: CATEGORY_CLASS[event.category] ?? "bg-slate-500",
+    className: colorForEvent(event._id),
     extendedProps: event,
   }
 }

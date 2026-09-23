@@ -38,13 +38,12 @@ export default async function AdminDashboardPage() {
       </div>
 
       {pending > 0 && (
-        <div className="mb-6 flex items-center justify-between rounded-lg border border-brand-red/30 bg-accent px-4 py-3">
-          <p className="text-sm">
+        <div className="mb-6 flex items-center justify-between rounded-lg border border-brand-red/30 bg-accent px-6 py-6">
+          <p className="text-base">
             <span className="font-semibold">{pending}</span> event{pending === 1 ? "" : "s"}{" "}
             waiting for approval.
           </p>
           <Button
-            size="sm"
             render={<Link href="/admin/approvals">Review now</Link>}
             nativeButton={false}
           />

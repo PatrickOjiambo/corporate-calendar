@@ -6,6 +6,17 @@ export const SUBSIDIARY_TIMEZONES = [
   { value: "Africa/Abidjan", label: "Ivory Coast (Abidjan, GMT)" },
 ] as const
 
+// Node's ICU data has no short zone-name abbreviation for these zones (none of
+// them observe DST, so `Intl`/date-fns-tz's `zzz` token falls back to a bare
+// "GMT+3" style offset instead of "EAT"). Hardcode the conventional
+// abbreviations for the zones we actually support; anything else falls back
+// to the GMT-offset label date-fns-tz already produces.
+const KNOWN_ABBREVIATIONS: Record<string, string> = {
+  "Africa/Nairobi": "EAT",
+  "Africa/Lusaka": "CAT",
+  "Africa/Abidjan": "GMT",
+}
+
 export function getViewerTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
@@ -19,6 +30,8 @@ export function formatViewerLocal(date: Date | string, pattern = "PPpp") {
   return formatInTimeZone(date, getViewerTimezone(), pattern)
 }
 
-export function formatOriginalTimezone(date: Date | string, timezone: string, pattern = "p zzz") {
-  return formatInTimeZone(date, timezone, pattern)
+export function formatOriginalTimezone(date: Date | string, timezone: string, pattern = "p") {
+  const time = formatInTimeZone(date, timezone, pattern)
+  const abbreviation = KNOWN_ABBREVIATIONS[timezone] ?? formatInTimeZone(date, timezone, "zzz")
+  return `${time} ${abbreviation}`
 }

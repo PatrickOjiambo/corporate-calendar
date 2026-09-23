@@ -56,7 +56,12 @@ export function CalendarView() {
         height="auto"
         eventClick={handleEventClick}
         events={(fetchInfo, successCallback, failureCallback) => {
-          fetch(`/api/events?from=${fetchInfo.startStr}&to=${fetchInfo.endStr}`)
+          // Use URLSearchParams rather than raw template interpolation: FullCalendar's
+          // startStr/endStr include a "+HH:MM" timezone offset (e.g. "...T00:00:00+03:00"),
+          // and an un-encoded "+" in a query string is decoded as a space, corrupting the
+          // date and causing every request to 500 for anyone in a positive-offset timezone.
+          const params = new URLSearchParams({ from: fetchInfo.startStr, to: fetchInfo.endStr })
+          fetch(`/api/events?${params}`)
             .then((res) => res.json())
             .then((events: CalendarEvent[]) => successCallback(events.map(toEventInput)))
             .catch(failureCallback)

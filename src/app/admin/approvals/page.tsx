@@ -39,7 +39,8 @@ export default async function ApprovalsPage() {
             <TableRow key={event._id.toString()}>
               <TableCell>{event.title}</TableCell>
               <TableCell>
-                {(event.createdBy as unknown as { name: string } | null)?.name ?? "—"}
+                {(event.createdBy as unknown as { name: string } | null)?.name ??
+                  (event.submitterIp ? `Anonymous (${event.submitterIp})` : "Anonymous")}
               </TableCell>
               <TableCell>
                 <a href={`mailto:${event.organizerEmail}`} className="underline">

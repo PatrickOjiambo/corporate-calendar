@@ -155,13 +155,13 @@ export function EventForm({
     }
 
     toast.success("Event updated")
-    router.push("/my-events")
+    router.push("/admin/approvals")
     router.refresh()
   }
 
   function closeSubmittedDialog() {
     setSubmitted(false)
-    router.push("/my-events")
+    router.push("/")
     router.refresh()
   }
 

@@ -24,7 +24,8 @@ export type CalendarEvent = {
   status: string
   organizerEmail?: string
   meetingLink?: string
-  venue?: { name: string; location?: string; isOnline?: boolean } | null
+  customLocation?: string
+  venue?: { name: string; location?: string; isOnline?: boolean; allowsCustomLocation?: boolean } | null
   organizingDepartment?: { name: string } | null
 }
 
@@ -70,8 +71,10 @@ export function EventDetailDialog({
 
             {event.venue && (
               <p className="text-sm text-muted-foreground">
-                📍 {event.venue.name}
-                {event.venue.location ? `, ${event.venue.location}` : ""}
+                📍{" "}
+                {event.venue.allowsCustomLocation && event.customLocation
+                  ? event.customLocation
+                  : `${event.venue.name}${event.venue.location ? `, ${event.venue.location}` : ""}`}
               </p>
             )}
 

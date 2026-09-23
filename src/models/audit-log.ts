@@ -14,7 +14,9 @@ const auditLogSchema = new Schema(
     entityType: { type: String, required: true },
     entityId: { type: Schema.Types.ObjectId, required: true },
     action: { type: String, enum: AUDIT_ACTIONS, required: true },
-    actor: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    // No actor for anonymous submissions — the submitter's IP/email live in
+    // metadata instead.
+    actor: { type: Schema.Types.ObjectId, ref: "User" },
     metadata: { type: Schema.Types.Mixed },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
@@ -29,7 +31,7 @@ export async function writeAuditLog(entry: {
   entityType: string
   entityId: unknown
   action: (typeof AUDIT_ACTIONS)[number]
-  actor: unknown
+  actor?: unknown
   metadata?: unknown
 }) {
   await AuditLog.create(entry)

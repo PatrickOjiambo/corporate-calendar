@@ -26,7 +26,13 @@ const eventSchema = new Schema(
     audience: { type: String, enum: EVENT_AUDIENCES, required: true, default: "EntireOrganization" },
     audienceDepartments: [{ type: Schema.Types.ObjectId, ref: "Department" }],
     status: { type: String, enum: EVENT_STATUSES, default: "Draft" },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    // No login is required to submit an event (anyone on the Kenya Re network
+    // can), so most submissions have no account behind them. Set only when an
+    // authenticated admin/superadmin creates the event themselves.
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    // Best-effort IP of an anonymous submitter — the only "identity" we keep
+    // for non-admin submissions, since there's no account to attribute it to.
+    submitterIp: { type: String },
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
     approvedAt: { type: Date },
     rejectionReason: { type: String },

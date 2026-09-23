@@ -16,6 +16,11 @@ const eventSchema = new Schema(
     // too (for venue context) but never used to shift their dates.
     timezone: { type: String, required: true },
     venue: { type: Schema.Types.ObjectId, ref: "Venue", required: true },
+    // Required contact for the person organizing the event, shown to admins
+    // reviewing it and to viewers on the public detail dialog.
+    organizerEmail: { type: String, required: true },
+    // Only meaningful when venue.isOnline is true.
+    meetingLink: { type: String },
     organizingDepartment: { type: Schema.Types.ObjectId, ref: "Department", required: true },
     category: { type: String, enum: EVENT_CATEGORIES, required: true },
     audience: { type: String, enum: EVENT_AUDIENCES, required: true, default: "EntireOrganization" },

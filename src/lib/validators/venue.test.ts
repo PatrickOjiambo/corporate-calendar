@@ -59,6 +59,23 @@ describe("createVenueSchema", () => {
       expect(result.data.capacity).toBe(150)
     }
   })
+
+  it("defaults isOnline to false when omitted", () => {
+    const result = createVenueSchema.safeParse({ name: "Kenya Re Academy", timezone: "Africa/Nairobi" })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.isOnline).toBe(false)
+    }
+  })
+
+  it("accepts an online venue with isOnline true", () => {
+    const result = createVenueSchema.safeParse({
+      name: "Online",
+      timezone: "Africa/Nairobi",
+      isOnline: true,
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("updateVenueSchema", () => {

@@ -2,6 +2,7 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz"
 
 export const SUBSIDIARY_TIMEZONES = [
   { value: "Africa/Nairobi", label: "Kenya (Nairobi, EAT)" },
+  { value: "Africa/Kampala", label: "Uganda (Kampala, EAT)" },
   { value: "Africa/Lusaka", label: "Zambia (Lusaka, CAT)" },
   { value: "Africa/Abidjan", label: "Ivory Coast (Abidjan, GMT)" },
 ] as const
@@ -13,6 +14,7 @@ export const SUBSIDIARY_TIMEZONES = [
 // to the GMT-offset label date-fns-tz already produces.
 const KNOWN_ABBREVIATIONS: Record<string, string> = {
   "Africa/Nairobi": "EAT",
+  "Africa/Kampala": "EAT",
   "Africa/Lusaka": "CAT",
   "Africa/Abidjan": "GMT",
 }

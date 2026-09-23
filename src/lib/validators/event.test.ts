@@ -11,6 +11,7 @@ function baseEvent(overrides: Record<string, unknown> = {}) {
     endAt: "2026-10-07T07:00:00.000Z",
     timezone: "Africa/Nairobi",
     venue: VALID_ID_A,
+    organizerEmail: "jane@kenyare.co.ke",
     organizingDepartment: VALID_ID_A,
     category: "Meeting",
     audience: "EntireOrganization",
@@ -25,7 +26,7 @@ describe("createEventSchema", () => {
   })
 
   it("defaults allDay to false and audience to EntireOrganization when omitted", () => {
-    const { title, startAt, endAt, timezone, venue, organizingDepartment, category } =
+    const { title, startAt, endAt, timezone, venue, organizerEmail, organizingDepartment, category } =
       baseEvent()
     const result = createEventSchema.safeParse({
       title,
@@ -33,6 +34,7 @@ describe("createEventSchema", () => {
       endAt,
       timezone,
       venue,
+      organizerEmail,
       organizingDepartment,
       category,
     })
@@ -56,6 +58,44 @@ describe("createEventSchema", () => {
   it("rejects an unknown category", () => {
     const result = createEventSchema.safeParse(baseEvent({ category: "Party" }))
     expect(result.success).toBe(false)
+  })
+
+  describe("organizerEmail", () => {
+    it("rejects a missing organizer email", () => {
+      const result = createEventSchema.safeParse(baseEvent({ organizerEmail: undefined }))
+      expect(result.success).toBe(false)
+    })
+
+    it("rejects a malformed organizer email", () => {
+      const result = createEventSchema.safeParse(baseEvent({ organizerEmail: "not-an-email" }))
+      expect(result.success).toBe(false)
+    })
+
+    it("accepts a valid organizer email", () => {
+      const result = createEventSchema.safeParse(
+        baseEvent({ organizerEmail: "organizer@kenyare.co.ke" })
+      )
+      expect(result.success).toBe(true)
+    })
+  })
+
+  describe("meetingLink", () => {
+    it("is optional (only relevant for the Online venue)", () => {
+      const result = createEventSchema.safeParse(baseEvent({ meetingLink: undefined }))
+      expect(result.success).toBe(true)
+    })
+
+    it("rejects a malformed URL when provided", () => {
+      const result = createEventSchema.safeParse(baseEvent({ meetingLink: "not-a-url" }))
+      expect(result.success).toBe(false)
+    })
+
+    it("accepts a valid meeting URL", () => {
+      const result = createEventSchema.safeParse(
+        baseEvent({ meetingLink: "https://meet.google.com/abc-defg-hij" })
+      )
+      expect(result.success).toBe(true)
+    })
   })
 
   describe("endAt >= startAt refinement", () => {

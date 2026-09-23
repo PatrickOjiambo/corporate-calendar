@@ -7,6 +7,9 @@ const venueSchema = new Schema(
     capacity: { type: Number },
     // IANA timezone, e.g. "Africa/Nairobi" — default source for an event's timezone
     timezone: { type: String, required: true },
+    // Online venues have no fixed location — the organizer supplies a
+    // meeting link per-event instead (see Event.meetingLink).
+    isOnline: { type: Boolean, default: false },
   },
   { timestamps: true }
 )

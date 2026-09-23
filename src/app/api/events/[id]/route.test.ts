@@ -41,6 +41,7 @@ async function createEvent(overrides: Record<string, unknown> = {}) {
     startAt: new Date("2026-10-07T05:00:00Z"),
     endAt: new Date("2026-10-07T06:00:00Z"),
     timezone: "Africa/Nairobi",
+    organizerEmail: "organizer@kenyare.co.ke",
     createdBy: "000000000000000000000001",
     ...overrides,
   })

@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
   const events = await Event.find(filter)
     .sort({ startAt: 1 })
-    .populate("venue", "name location timezone")
+    .populate("venue", "name location timezone isOnline")
     .populate("organizingDepartment", "name")
     .lean()
 

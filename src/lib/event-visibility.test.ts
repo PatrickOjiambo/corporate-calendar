@@ -55,6 +55,7 @@ async function seed() {
     endAt: new Date("2026-10-07T06:00:00Z"),
     timezone: "Africa/Nairobi",
     createdBy: carol._id,
+    organizerEmail: "carol@kenyare.co.ke",
   }
 
   const events = {

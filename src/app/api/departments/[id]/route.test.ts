@@ -58,6 +58,7 @@ describe("DELETE /api/departments/[id]", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: "000000000000000000000001",
     })
 
@@ -82,6 +83,7 @@ describe("DELETE /api/departments/[id]", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: "000000000000000000000001",
     })
 

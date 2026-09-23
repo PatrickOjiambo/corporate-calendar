@@ -38,6 +38,7 @@ function validEventPayload(overrides: Record<string, unknown> = {}) {
     startAt: "2026-10-07T05:00:00.000Z",
     endAt: "2026-10-07T07:00:00.000Z",
     timezone: "Africa/Nairobi",
+    organizerEmail: "organizer@kenyare.co.ke",
     category: "Meeting",
     audience: "EntireOrganization",
     ...overrides,
@@ -59,6 +60,7 @@ describe("GET /api/events", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: author,
     })
     await Event.create({
@@ -71,6 +73,7 @@ describe("GET /api/events", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: author,
     })
 
@@ -92,6 +95,7 @@ describe("GET /api/events", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: "000000000000000000000099",
     })
 
@@ -115,6 +119,7 @@ describe("GET /api/events", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: "000000000000000000000099",
     })
     await Event.create({
@@ -127,6 +132,7 @@ describe("GET /api/events", () => {
       startAt: new Date(),
       endAt: new Date(),
       timezone: "Africa/Nairobi",
+      organizerEmail: "organizer@kenyare.co.ke",
       createdBy: "000000000000000000000099",
     })
 

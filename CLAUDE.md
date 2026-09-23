@@ -18,9 +18,18 @@ by audience and department.
 
 ## Data model
 `User` (role: superadmin/admin/user), `Department`, `Venue` (has its own IANA
-`timezone`), `Event` (status: Draft → PendingApproval → Approved/Rejected,
-Approved → Cancelled; never hard-deleted), `AuditLog` (append-only, one entry
-per event mutation).
+`timezone` and an `isOnline` flag), `Event` (status: Draft → PendingApproval →
+Approved/Rejected, Approved → Cancelled; never hard-deleted), `AuditLog`
+(append-only, one entry per event mutation).
+
+Real Kenya Re departments (25, including the Zambia/Uganda/Ivory Coast
+subsidiaries) and the two supported venues (**Kenya Re Academy**, **Online**)
+are seeded by `scripts/seed-reference-data.ts` (`pnpm seed:data`), not
+hardcoded as an enum — admins can still add more via `/admin/departments` and
+`/admin/venues`. Every event requires an `organizerEmail` (contact for the
+submission) and, when the selected venue's `isOnline` is true, a
+`meetingLink` — the event form only shows/requires the link field once an
+online venue is picked.
 
 ## Auth architecture — important
 `src/lib/auth.config.ts` is **edge-safe**: no providers, no DB calls in
@@ -53,7 +62,8 @@ or without Docker:
 ```bash
 cp .env.example .env.local  # set MONGODB_URI, AUTH_SECRET, SEED_SUPERADMIN_EMAIL/PASSWORD
 pnpm install
-pnpm seed   # creates the initial superadmin user (idempotent)
+pnpm seed        # creates the initial superadmin user (idempotent)
+pnpm seed:data   # ensures the real Kenya Re departments + Kenya Re Academy/Online venues exist (idempotent)
 pnpm dev
 ```
 

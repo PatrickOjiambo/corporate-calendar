@@ -22,7 +22,9 @@ export type CalendarEvent = {
   category: string
   audience: string
   status: string
-  venue?: { name: string; location?: string } | null
+  organizerEmail?: string
+  meetingLink?: string
+  venue?: { name: string; location?: string; isOnline?: boolean } | null
   organizingDepartment?: { name: string } | null
 }
 
@@ -73,9 +75,32 @@ export function EventDetailDialog({
               </p>
             )}
 
+            {event.meetingLink && (
+              <p className="text-sm">
+                🔗{" "}
+                <a
+                  href={event.meetingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  Join online
+                </a>
+              </p>
+            )}
+
             {event.organizingDepartment && (
               <p className="text-sm text-muted-foreground">
                 Organized by {event.organizingDepartment.name}
+              </p>
+            )}
+
+            {event.organizerEmail && (
+              <p className="text-sm text-muted-foreground">
+                Contact:{" "}
+                <a href={`mailto:${event.organizerEmail}`} className="underline">
+                  {event.organizerEmail}
+                </a>
               </p>
             )}
 

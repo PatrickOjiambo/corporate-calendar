@@ -28,6 +28,7 @@ export default async function ApprovalsPage() {
           <TableRow>
             <TableHead>Event</TableHead>
             <TableHead>Submitted by</TableHead>
+            <TableHead>Contact</TableHead>
             <TableHead>When</TableHead>
             <TableHead>Audience</TableHead>
             <TableHead>Actions</TableHead>
@@ -39,6 +40,11 @@ export default async function ApprovalsPage() {
               <TableCell>{event.title}</TableCell>
               <TableCell>
                 {(event.createdBy as unknown as { name: string } | null)?.name ?? "—"}
+              </TableCell>
+              <TableCell>
+                <a href={`mailto:${event.organizerEmail}`} className="underline">
+                  {event.organizerEmail}
+                </a>
               </TableCell>
               <TableCell>
                 {event.allDay

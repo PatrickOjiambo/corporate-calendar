@@ -26,6 +26,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { EVENT_CATEGORIES, EVENT_AUDIENCES } from "@/lib/constants"
 import { SUBSIDIARY_TIMEZONES, localDateTimeToUtc } from "@/lib/timezone"
 
@@ -38,6 +46,8 @@ const formSchema = z
     endDate: z.string().min(1, "End is required"),
     timezone: z.string().min(1, "Timezone is required"),
     venue: z.string().min(1, "Venue is required"),
+    organizerEmail: z.string().email("Enter a valid email"),
+    meetingLink: z.string().url("Enter a valid URL").optional().or(z.literal("")),
     organizingDepartment: z.string().min(1, "Department is required"),
     category: z.enum(EVENT_CATEGORIES),
     audience: z.enum(EVENT_AUDIENCES),
@@ -49,7 +59,7 @@ const formSchema = z
   })
 
 type FormValues = z.infer<typeof formSchema>
-type Option = { _id: string; name: string; timezone?: string }
+type Option = { _id: string; name: string; timezone?: string; isOnline?: boolean }
 
 export function EventForm({
   mode,
@@ -63,6 +73,7 @@ export function EventForm({
   const router = useRouter()
   const [venues, setVenues] = useState<Option[]>([])
   const [departments, setDepartments] = useState<Option[]>([])
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     fetch("/api/venues")
@@ -83,6 +94,8 @@ export function EventForm({
       endDate: "",
       timezone: "Africa/Nairobi",
       venue: "",
+      organizerEmail: "",
+      meetingLink: "",
       organizingDepartment: "",
       category: "Meeting",
       audience: "EntireOrganization",
@@ -93,8 +106,15 @@ export function EventForm({
 
   const allDay = form.watch("allDay")
   const audience = form.watch("audience")
+  const venueId = form.watch("venue")
+  const selectedVenue = venues.find((v) => v._id === venueId)
 
   async function onSubmit(values: FormValues) {
+    if (selectedVenue?.isOnline && !values.meetingLink) {
+      form.setError("meetingLink", { message: "A meeting link is required for an online venue" })
+      return
+    }
+
     const startAt = values.allDay
       ? new Date(`${values.startDate}T00:00:00Z`)
       : localDateTimeToUtc(values.startDate, values.timezone)
@@ -110,6 +130,8 @@ export function EventForm({
       endAt: endAt.toISOString(),
       timezone: values.timezone,
       venue: values.venue,
+      organizerEmail: values.organizerEmail,
+      meetingLink: values.meetingLink || undefined,
       organizingDepartment: values.organizingDepartment,
       category: values.category,
       audience: values.audience,
@@ -127,7 +149,18 @@ export function EventForm({
       return
     }
 
-    toast.success(mode === "create" ? "Event submitted for approval" : "Event updated")
+    if (mode === "create") {
+      setSubmitted(true)
+      return
+    }
+
+    toast.success("Event updated")
+    router.push("/my-events")
+    router.refresh()
+  }
+
+  function closeSubmittedDialog() {
+    setSubmitted(false)
     router.push("/my-events")
     router.refresh()
   }
@@ -267,6 +300,36 @@ export function EventForm({
           )}
         />
 
+        {selectedVenue?.isOnline && (
+          <FormField
+            control={form.control}
+            name="meetingLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Meeting link</FormLabel>
+                <FormControl>
+                  <Input type="url" placeholder="https://meet.google.com/..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <FormField
+          control={form.control}
+          name="organizerEmail"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="you@kenyare.co.ke" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="organizingDepartment"
@@ -379,6 +442,25 @@ export function EventForm({
           {mode === "create" ? "Submit for approval" : "Save changes"}
         </Button>
       </form>
+
+      <Dialog open={submitted} onOpenChange={(open) => !open && closeSubmittedDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Event submitted</DialogTitle>
+            <DialogDescription>
+              Your event has been sent for approval. To get it approved quickly so everyone can
+              view it, please reach out to the admin at{" "}
+              <a href="mailto:ojiambo@kenyare.co.ke" className="text-primary underline">
+                ojiambo@kenyare.co.ke
+              </a>{" "}
+              or extension <span className="font-medium">241</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={closeSubmittedDialog}>Got it</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Form>
   )
 }

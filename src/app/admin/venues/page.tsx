@@ -20,9 +20,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { SUBSIDIARY_TIMEZONES } from "@/lib/timezone"
 
-type Venue = { _id: string; name: string; location?: string; timezone: string }
+type Venue = { _id: string; name: string; location?: string; timezone: string; isOnline?: boolean }
 
 export default function VenuesPage() {
   const [venues, setVenues] = useState<Venue[]>([])
@@ -30,6 +32,7 @@ export default function VenuesPage() {
   const [name, setName] = useState("")
   const [location, setLocation] = useState("")
   const [timezone, setTimezone] = useState("Africa/Nairobi")
+  const [isOnline, setIsOnline] = useState(false)
 
   function load() {
     fetch("/api/venues")
@@ -43,7 +46,7 @@ export default function VenuesPage() {
     const res = await fetch("/api/venues", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, location, timezone }),
+      body: JSON.stringify({ name, location, timezone, isOnline }),
     })
     if (!res.ok) {
       toast.error("Could not create venue")
@@ -52,6 +55,7 @@ export default function VenuesPage() {
     setOpen(false)
     setName("")
     setLocation("")
+    setIsOnline(false)
     load()
   }
 
@@ -92,6 +96,10 @@ export default function VenuesPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Label className="flex items-center justify-between gap-2 rounded-lg border p-3 font-normal">
+              Online venue (organizer provides a link per event)
+              <Switch checked={isOnline} onCheckedChange={setIsOnline} />
+            </Label>
             <DialogFooter>
               <Button disabled={!name.trim()} onClick={create}>
                 Create
@@ -107,6 +115,7 @@ export default function VenuesPage() {
             <TableHead>Name</TableHead>
             <TableHead>Location</TableHead>
             <TableHead>Timezone</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead></TableHead>
           </TableRow>
         </TableHeader>
@@ -116,6 +125,7 @@ export default function VenuesPage() {
               <TableCell>{v.name}</TableCell>
               <TableCell>{v.location}</TableCell>
               <TableCell>{v.timezone}</TableCell>
+              <TableCell>{v.isOnline ? "Online" : "In person"}</TableCell>
               <TableCell>
                 <Button size="sm" variant="ghost" onClick={() => remove(v._id)}>
                   Delete

@@ -7,10 +7,10 @@ import timeGridPlugin from "@fullcalendar/timegrid"
 import multiMonthPlugin from "@fullcalendar/multimonth"
 import listPlugin from "@fullcalendar/list"
 import interactionPlugin from "@fullcalendar/interaction"
-import type { EventClickArg, EventInput } from "@fullcalendar/core"
-import { addDays } from "date-fns"
+import type { EventClickArg } from "@fullcalendar/core"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EventDetailDialog, type CalendarEvent } from "@/components/events/event-detail-dialog"
+import { toEventInput } from "@/lib/calendar-mapping"
 
 const VIEW_MAP = {
   year: "multiMonthYear",
@@ -20,29 +20,6 @@ const VIEW_MAP = {
 } as const
 
 type ViewKey = keyof typeof VIEW_MAP
-
-const CATEGORY_CLASS: Record<string, string> = {
-  Meeting: "bg-blue-500",
-  Training: "bg-emerald-500",
-  Workshop: "bg-emerald-500",
-  Conference: "bg-purple-500",
-  "Staff Activity": "bg-amber-500",
-  "Corporate Event": "bg-rose-500",
-  Deadline: "bg-red-600",
-  Other: "bg-slate-500",
-}
-
-function toEventInput(event: CalendarEvent): EventInput {
-  return {
-    id: event._id,
-    title: event.title,
-    start: event.startAt,
-    end: event.allDay ? addDays(new Date(event.endAt), 1) : event.endAt,
-    allDay: event.allDay,
-    className: CATEGORY_CLASS[event.category] ?? "bg-slate-500",
-    extendedProps: event,
-  }
-}
 
 export function CalendarView() {
   const calendarRef = useRef<FullCalendar>(null)

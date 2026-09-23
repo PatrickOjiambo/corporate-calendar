@@ -13,18 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+// No public sign-in entry point — admins reach /login by typing it directly.
+// Renders nothing for anonymous visitors, an admin menu once signed in.
 export function UserNav() {
   const { data: session, status } = useSession()
 
-  if (status === "loading") return null
-
-  if (!session?.user) {
-    return <Button render={<Link href="/login">Sign in</Link>} size="sm" />
-  }
+  if (status === "loading" || !session?.user) return null
 
   const { name, role } = session.user
   const initials = (name ?? "?").slice(0, 2).toUpperCase()
-  const isAdmin = role === "admin" || role === "superadmin"
 
   return (
     <DropdownMenu>
@@ -41,9 +38,7 @@ export function UserNav() {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{role}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/submit-event">Submit event</Link>} />
-        <DropdownMenuItem render={<Link href="/my-events">My events</Link>} />
-        {isAdmin && <DropdownMenuItem render={<Link href="/admin">Admin dashboard</Link>} />}
+        <DropdownMenuItem render={<Link href="/admin">Admin dashboard</Link>} />
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>

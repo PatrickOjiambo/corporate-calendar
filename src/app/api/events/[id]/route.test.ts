@@ -145,38 +145,27 @@ describe("POST /api/events/[id]/cancel", () => {
 })
 
 describe("PATCH /api/events/[id]", () => {
-  it("lets the owner edit their own PendingApproval event", async () => {
-    const ownerId = "000000000000000000000005"
-    mockAuth.mockResolvedValue(session({ id: ownerId, role: "user" }))
-    const event = await createEvent({ createdBy: ownerId, status: "PendingApproval" })
+  it("forbids an anonymous (unauthenticated) request — no accounts to own events anymore", async () => {
+    mockAuth.mockResolvedValue(null)
+    const event = await createEvent({ status: "PendingApproval" })
     const res = await PATCH(
-      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "Renamed" }) }),
-      withId(event._id.toString())
-    )
-    expect(res.status).toBe(200)
-    expect((await Event.findById(event._id))!.title).toBe("Renamed")
-  })
-
-  it("forbids the owner from editing their own event once it is Approved", async () => {
-    const ownerId = "000000000000000000000005"
-    mockAuth.mockResolvedValue(session({ id: ownerId, role: "user" }))
-    const event = await createEvent({ createdBy: ownerId, status: "Approved" })
-    const res = await PATCH(
-      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "Renamed" }) }),
+      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "Hijacked" }) }),
       withId(event._id.toString())
     )
     expect(res.status).toBe(403)
     expect((await Event.findById(event._id))!.title).toBe("Board Meeting")
   })
 
-  it("forbids a non-owner, non-admin user from editing someone else's pending event", async () => {
-    mockAuth.mockResolvedValue(session({ id: "000000000000000000000099", role: "user" }))
-    const event = await createEvent({
-      createdBy: "000000000000000000000005",
-      status: "PendingApproval",
-    })
+  it("forbids an admin-role-less session even if it happens to match createdBy", async () => {
+    // Guards against a regression back to ownership-based editing: the
+    // submitter recorded as createdBy (e.g. an admin submitted anonymously
+    // in a past session that later logged out) must not be able to edit
+    // just by matching that id — only role matters now.
+    const someoneId = "000000000000000000000005"
+    mockAuth.mockResolvedValue(session({ id: someoneId, role: "user" }))
+    const event = await createEvent({ createdBy: someoneId, status: "PendingApproval" })
     const res = await PATCH(
-      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "Hijacked" }) }),
+      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "Renamed" }) }),
       withId(event._id.toString())
     )
     expect(res.status).toBe(403)
@@ -208,13 +197,14 @@ describe("PATCH /api/events/[id]", () => {
     expect((logs[0].metadata as { title?: string }).title).toBe("New title")
   })
 
-  it("rejects an unauthenticated request with 401", async () => {
-    mockAuth.mockResolvedValue(null)
-    const event = await createEvent()
+  it("lets an admin edit a PendingApproval event too", async () => {
+    mockAuth.mockResolvedValue(session({ role: "admin" }))
+    const event = await createEvent({ status: "PendingApproval" })
     const res = await PATCH(
-      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "X" }) }),
+      new Request("http://x", { method: "PATCH", body: JSON.stringify({ title: "Fixed typo" }) }),
       withId(event._id.toString())
     )
-    expect(res.status).toBe(401)
+    expect(res.status).toBe(200)
+    expect((await Event.findById(event._id))!.title).toBe("Fixed typo")
   })
 })

@@ -29,22 +29,18 @@ export async function GET(request: Request, { params }: Params) {
 export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params
   const session = await auth()
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const role = session?.user?.role
+
+  // No regular logged-in submitters to own an event anymore — editing after
+  // submission is an admin/superadmin action only.
+  if (role !== "admin" && role !== "superadmin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
   await connectToDatabase()
   const event = await Event.findById(id)
   if (!event) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
-
-  const isAdmin = session.user.role === "admin" || session.user.role === "superadmin"
-  const isOwner = event.createdBy.toString() === session.user.id
-  const ownerCanEdit = isOwner && ["Draft", "PendingApproval"].includes(event.status)
-
-  if (!isAdmin && !ownerCanEdit) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
   const body = await request.json()
@@ -60,7 +56,7 @@ export async function PATCH(request: Request, { params }: Params) {
     entityType: "Event",
     entityId: event._id,
     action: "edited",
-    actor: session.user.id,
+    actor: session!.user.id,
     metadata: parsed.data,
   })
 

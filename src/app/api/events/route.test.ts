@@ -46,6 +46,32 @@ function validEventPayload(overrides: Record<string, unknown> = {}) {
 }
 
 describe("GET /api/events", () => {
+  it("handles a from/to range with a properly URL-encoded timezone offset (this is what the calendar's fetch actually sends)", async () => {
+    mockAuth.mockResolvedValue(null)
+    // What FullCalendar + URLSearchParams produces for a browser in EAT
+    // (UTC+3): the "+" is percent-encoded as "%2B" so it survives intact.
+    const params = new URLSearchParams({
+      from: "2026-08-30T00:00:00+03:00",
+      to: "2026-10-11T00:00:00+03:00",
+    })
+    const res = await GET(new Request(`http://localhost/api/events?${params}`))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual([])
+  })
+
+  it("returns 400 instead of crashing when '+' arrives unencoded and decodes to a space (regression guard for the fix above)", async () => {
+    mockAuth.mockResolvedValue(null)
+    // Simulates a client that builds the URL the old, broken way
+    // (`?from=${str}`), where a literal "+" in a timezone offset is decoded
+    // as a space by URLSearchParams, corrupting the date into "Invalid Date".
+    // This used to crash with an uncaught Mongoose CastError (500); it must
+    // now fail cleanly with 400.
+    const res = await GET(
+      new Request("http://localhost/api/events?from=2026-08-30T00:00:00+03:00")
+    )
+    expect(res.status).toBe(400)
+  })
+
   it("returns only Approved org-wide/public events for an unauthenticated request", async () => {
     mockAuth.mockResolvedValue(null)
     const { ict, venue } = await seedFixture()
@@ -143,15 +169,43 @@ describe("GET /api/events", () => {
 })
 
 describe("POST /api/events", () => {
-  it("rejects an unauthenticated submission", async () => {
+  it("allows an anonymous (unauthenticated) submission — the whole point is no login required", async () => {
     mockAuth.mockResolvedValue(null)
+    const { ict, venue } = await seedFixture()
     const res = await POST(
       new Request("http://localhost/api/events", {
         method: "POST",
-        body: JSON.stringify(validEventPayload()),
+        headers: { "x-forwarded-for": "203.0.113.5" },
+        body: JSON.stringify(
+          validEventPayload({ venue: venue._id.toString(), organizingDepartment: ict._id.toString() })
+        ),
       })
     )
-    expect(res.status).toBe(401)
+    expect(res.status).toBe(201)
+    const body = await res.json()
+    expect(body.createdBy).toBeUndefined()
+    expect(body.submitterIp).toBe("203.0.113.5")
+    expect(body.status).toBe("PendingApproval")
+  })
+
+  it("writes a 'submitted' audit log entry with no actor for an anonymous submission", async () => {
+    mockAuth.mockResolvedValue(null)
+    const { ict, venue } = await seedFixture()
+    await POST(
+      new Request("http://localhost/api/events", {
+        method: "POST",
+        body: JSON.stringify(
+          validEventPayload({ venue: venue._id.toString(), organizingDepartment: ict._id.toString() })
+        ),
+      })
+    )
+    const logs = await AuditLog.find({ entityType: "Event" }).lean()
+    expect(logs).toHaveLength(1)
+    expect(logs[0].action).toBe("submitted")
+    expect(logs[0].actor).toBeUndefined()
+    expect((logs[0].metadata as { organizerEmail?: string }).organizerEmail).toBe(
+      "organizer@kenyare.co.ke"
+    )
   })
 
   it("forces a new submission to PendingApproval even if the client sends a different status", async () => {

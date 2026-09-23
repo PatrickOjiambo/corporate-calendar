@@ -33,6 +33,7 @@ const DEPARTMENTS = [
 const VENUES = [
   { name: "Kenya Re Academy", location: "Nairobi, Kenya", timezone: "Africa/Nairobi", isOnline: false },
   { name: "Online", timezone: "Africa/Nairobi", isOnline: true },
+  { name: "Other", timezone: "Africa/Nairobi", isOnline: false, allowsCustomLocation: true },
 ]
 
 async function main() {

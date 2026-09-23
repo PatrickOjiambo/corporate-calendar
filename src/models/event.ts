@@ -21,6 +21,8 @@ const eventSchema = new Schema(
     organizerEmail: { type: String, required: true },
     // Only meaningful when venue.isOnline is true.
     meetingLink: { type: String },
+    // Only meaningful when venue.allowsCustomLocation is true.
+    customLocation: { type: String },
     organizingDepartment: { type: Schema.Types.ObjectId, ref: "Department", required: true },
     category: { type: String, enum: EVENT_CATEGORIES, required: true },
     audience: { type: String, enum: EVENT_AUDIENCES, required: true, default: "EntireOrganization" },

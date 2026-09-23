@@ -17,7 +17,7 @@ export async function GET(request: Request, { params }: Params) {
   const filter = isAdmin ? { _id: id } : { _id: id, ...visibilityFilter(session) }
 
   const event = await Event.findOne(filter)
-    .populate("venue", "name location timezone isOnline")
+    .populate("venue", "name location timezone isOnline allowsCustomLocation")
     .populate("organizingDepartment", "name")
 
   if (!event) {

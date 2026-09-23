@@ -6,6 +6,7 @@ export const createVenueSchema = z.object({
   capacity: z.coerce.number().int().positive().optional(),
   timezone: z.string().min(1, "Timezone is required"),
   isOnline: z.boolean().default(false),
+  allowsCustomLocation: z.boolean().default(false),
 })
 
 export const updateVenueSchema = createVenueSchema.partial()

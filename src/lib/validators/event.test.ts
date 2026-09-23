@@ -98,6 +98,25 @@ describe("createEventSchema", () => {
     })
   })
 
+  describe("customLocation", () => {
+    it("is optional (only relevant for the Other venue)", () => {
+      const result = createEventSchema.safeParse(baseEvent({ customLocation: undefined }))
+      expect(result.success).toBe(true)
+    })
+
+    it("rejects an empty string when provided", () => {
+      const result = createEventSchema.safeParse(baseEvent({ customLocation: "" }))
+      expect(result.success).toBe(false)
+    })
+
+    it("accepts a real address", () => {
+      const result = createEventSchema.safeParse(
+        baseEvent({ customLocation: "Sarova Stanley Hotel, Nairobi" })
+      )
+      expect(result.success).toBe(true)
+    })
+  })
+
   describe("endAt >= startAt refinement", () => {
     it("rejects an end time before the start time", () => {
       const result = createEventSchema.safeParse(

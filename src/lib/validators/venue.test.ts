@@ -76,6 +76,23 @@ describe("createVenueSchema", () => {
     })
     expect(result.success).toBe(true)
   })
+
+  it("defaults allowsCustomLocation to false when omitted", () => {
+    const result = createVenueSchema.safeParse({ name: "HQ", timezone: "Africa/Nairobi" })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.allowsCustomLocation).toBe(false)
+    }
+  })
+
+  it("accepts a venue with allowsCustomLocation true", () => {
+    const result = createVenueSchema.safeParse({
+      name: "Other",
+      timezone: "Africa/Nairobi",
+      allowsCustomLocation: true,
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("updateVenueSchema", () => {

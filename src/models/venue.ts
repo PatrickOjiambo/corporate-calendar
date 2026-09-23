@@ -10,6 +10,9 @@ const venueSchema = new Schema(
     // Online venues have no fixed location — the organizer supplies a
     // meeting link per-event instead (see Event.meetingLink).
     isOnline: { type: Boolean, default: false },
+    // "Other" venues have no fixed location either — the organizer types the
+    // actual address per-event instead (see Event.customLocation).
+    allowsCustomLocation: { type: Boolean, default: false },
   },
   { timestamps: true }
 )

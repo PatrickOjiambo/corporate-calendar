@@ -25,7 +25,7 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 
   await connectToDatabase()
-  const venue = await Venue.findByIdAndUpdate(id, parsed.data, { new: true })
+  const venue = await Venue.findByIdAndUpdate(id, parsed.data, { returnDocument: "after" })
   if (!venue) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }

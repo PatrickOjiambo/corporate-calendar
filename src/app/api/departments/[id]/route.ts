@@ -25,7 +25,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 
   await connectToDatabase()
-  const department = await Department.findByIdAndUpdate(id, parsed.data, { new: true })
+  const department = await Department.findByIdAndUpdate(id, parsed.data, {
+    returnDocument: "after",
+  })
   if (!department) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
+import { SignOutLink } from "@/components/auth/sign-out-link"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -17,6 +18,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/departments">Departments</Link>
         <Link href="/admin/venues">Venues</Link>
         {role === "superadmin" && <Link href="/admin/users">Users</Link>}
+        <hr className="my-2" />
+        <SignOutLink />
       </nav>
       <div className="flex-1">{children}</div>
     </div>

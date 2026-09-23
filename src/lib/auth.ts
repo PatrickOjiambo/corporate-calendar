@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import { connectToDatabase } from "@/lib/db"
 import { User, type UserRole } from "@/models/user"
 import { authConfig, type AppToken } from "@/lib/auth.config"
+import { isTokenStale } from "@/lib/auth-token"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -49,9 +50,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // Re-check role/department against the DB once a day so role changes
       // propagate without requiring a DB hit on every single request.
-      const issuedAt = t.iat ?? 0
-      const isStale = Date.now() / 1000 - issuedAt > 60 * 60 * 24
-      if ((isStale || !t.role) && t.id) {
+      if ((isTokenStale(t.iat ?? 0) || !t.role) && t.id) {
         await connectToDatabase()
         const fresh = await User.findById(t.id)
         if (fresh) {

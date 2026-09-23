@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
-import { UserNav } from "@/components/auth/user-nav";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,8 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kenya Re Corporate Calendar",
-  description: "Kenya Re's organization-wide event calendar",
+  title: {
+    default: "Kenya Re Corporate Calendar",
+    template: "%s · Kenya Re Corporate Calendar",
+  },
+  description: "Kenya Reinsurance Corporation's organization-wide event calendar",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/brand/kenya-re-mark.png",
+    apple: "/brand/kenya-re-mark.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -28,15 +36,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <Providers>
-          <header className="border-b">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-              <Link href="/" className="font-semibold">
-                Kenya Re Corporate Calendar
-              </Link>
-              <UserNav />
-            </div>
-          </header>
+          <SiteHeader />
           <main className="flex-1">{children}</main>
+          <SiteFooter />
         </Providers>
       </body>
     </html>

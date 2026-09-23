@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useState } from "react"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -49,9 +50,12 @@ function LoginForm() {
 
   return (
     <div className="mx-auto flex max-w-sm flex-col justify-center px-4 py-16">
+      <div className="mb-6 flex justify-center">
+        <Image src="/brand/kenya-re-mark.png" alt="Kenya Re" width={56} height={56} priority />
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle>Sign in to the Corporate Calendar</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>

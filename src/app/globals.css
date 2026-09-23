@@ -162,12 +162,26 @@
   color: var(--primary-foreground);
   cursor: pointer;
 }
-.fc .fc-daygrid-day-number,
-.fc .fc-col-header-cell-cushion,
+/* Desktop-only product — go big on the date numbers rather than tuning for mobile. */
+.fc .fc-daygrid-day-number {
+  font-size: 1.35rem;
+  font-weight: 600;
+  padding: 6px 10px;
+}
+.fc .fc-col-header-cell-cushion {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 8px 4px;
+}
 .fc .fc-timegrid-slot-label-cushion {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 500;
 }
 .fc .fc-toolbar-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+.fc .fc-multimonth-title {
+  font-size: 1.1rem;
+  font-weight: 600;
 }

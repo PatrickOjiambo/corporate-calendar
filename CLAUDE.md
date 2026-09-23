@@ -1,9 +1,13 @@
 # Kenya Re Corporate Calendar
 
-A corporate event publishing system for Kenya Re (subsidiaries in Kenya, Zambia,
-Ivory Coast). Anyone with an account can propose an event; admins/superadmins
-approve or reject it; the public calendar shows only Approved events, filtered
-by audience and department.
+A corporate event publishing system for Kenya Re. **No login is required to
+submit an event** — the site isn't reachable outside the Kenya Re network, so
+anyone who can load it may propose one; the only thing recorded for an
+anonymous submission is a best-effort IP (`Event.submitterIp`) and a required
+contact email (`organizerEmail`). Admins/superadmins are the only accounts
+that exist, reached by typing `/login` directly — there's no sign-in link
+anywhere in the UI. Admins approve or reject submissions; the public calendar
+shows only Approved events.
 
 ## Stack
 - Next.js (App Router, TypeScript, `src/` dir) + Tailwind v4
@@ -17,10 +21,19 @@ by audience and department.
 - Package manager: **pnpm** (not npm/yarn)
 
 ## Data model
-`User` (role: superadmin/admin/user), `Department`, `Venue` (has its own IANA
-`timezone` and an `isOnline` flag), `Event` (status: Draft → PendingApproval →
-Approved/Rejected, Approved → Cancelled; never hard-deleted), `AuditLog`
-(append-only, one entry per event mutation).
+`User` (role: superadmin/admin — the `user` role still exists in the enum for
+schema flexibility but nothing creates or needs one; there are no regular
+logged-in accounts), `Department`, `Venue` (has its own IANA `timezone` and an
+`isOnline` flag), `Event` (status: Draft → PendingApproval → Approved/Rejected,
+Approved → Cancelled; never hard-deleted; `createdBy` is optional — set only
+if an admin happens to submit while logged in), `AuditLog` (append-only, one
+entry per event mutation; `actor` is optional for the same reason).
+
+`src/lib/event-visibility.ts` is intentionally simple: admins see every
+status, everyone else (always anonymous) sees only `status: "Approved"`.
+Audience (EntireOrganization/Department/SpecificDepartments/Public) is an
+informational tag only — it does **not** restrict who can view an event,
+since there's no way to know an anonymous visitor's department.
 
 Real Kenya Re departments (25, including the Zambia/Uganda/Ivory Coast
 subsidiaries) and the two supported venues (**Kenya Re Academy**, **Online**)
@@ -47,11 +60,12 @@ dependencies. Client components must import enums from there, never from
 
 ## Conventions
 - Mongoose models: `src/models/*.ts`, guard re-registration with `models.X ?? model("X", schema)`
-- API routes: parse+validate with the matching Zod schema before touching the DB; return `400` with `error.flatten()` on failure. Auth/role checks happen inside each route handler via `auth()`, not just middleware.
+- API routes: parse+validate with the matching Zod schema before touching the DB; return `400` with `error.flatten()` on failure. Auth/role checks happen inside each route handler via `auth()`, not just middleware. `POST /api/events` is deliberately open to anyone; `PATCH`/approve/reject/cancel are admin-only (no ownership check — there are no owners).
 - Add new shadcn components with `pnpm dlx shadcn@latest add <name>`
 - Forms: `useForm({ resolver: zodResolver(schema) })` + the shadcn `Form`/`FormField` components
-- Event visibility (who sees which events) is centralized in `src/lib/event-visibility.ts` — reuse it rather than re-deriving the audience/department/status logic per route
+- Event visibility (who sees which events) is centralized in `src/lib/event-visibility.ts` — reuse it rather than re-deriving the status logic per route
 - Every event status transition (submit/approve/reject/edit/cancel) writes an `AuditLog` entry via `writeAuditLog()` in `src/models/audit-log.ts`
+- When building a query filter from client-supplied date/query params, always validate the parsed `Date` isn't `NaN` before handing it to Mongoose — an unencoded `+` in a query string (e.g. a timezone offset like `+03:00`) decodes as a space via `URLSearchParams`, and an uncaught Mongoose cast on an Invalid Date 500s instead of 400ing. On the client side, always build query strings with `URLSearchParams`, never raw template-literal interpolation (see `src/components/calendar/calendar-view.tsx`).
 
 ## Running locally
 ```bash

@@ -61,3 +61,29 @@ pnpm dev
 - `MONGODB_URI` — required
 - `AUTH_SECRET` — required by Auth.js (generate with `pnpm dlx auth secret`)
 - `SEED_SUPERADMIN_EMAIL` / `SEED_SUPERADMIN_PASSWORD` — used only by `pnpm seed`
+
+## Testing
+```bash
+pnpm test         # vitest run — unit + integration, no Docker/env vars needed
+pnpm test:watch
+```
+- Unit tests (`*.test.ts` next to the module) cover Zod validators, the
+  timezone helpers, and the FullCalendar event-mapping adapter
+  (`src/lib/calendar-mapping.ts` — the allDay exclusive-end-date math).
+- Integration tests spin up a real, ephemeral MongoDB via
+  `mongodb-memory-server` (`src/test/mongo-setup.ts`: `startTestDatabase` /
+  `clearTestDatabase` / `stopTestDatabase` in `beforeAll`/`afterEach`/`afterAll`).
+  They call API route handlers (e.g. `src/app/api/events/route.ts`'s `GET`/`POST`)
+  directly as plain functions with a `Request` object — no HTTP server needed.
+- Route tests mock only `@/lib/auth`'s `auth` export (`vi.mock` + `vi.hoisted`)
+  to control the session; everything else (Mongoose, validators, visibility
+  filtering) runs for real against the in-memory DB. This is deliberate:
+  `src/lib/event-visibility.ts` is security-critical (it's what stops a
+  department-scoped or pending event leaking to the public calendar), so it's
+  tested by actually querying Mongo, not by asserting on the filter object's
+  shape.
+- When adding a new API route or changing an existing one's auth/status
+  logic, add a test following the pattern in
+  `src/app/api/events/[id]/route.test.ts` rather than only relying on
+  `src/lib/event-visibility.test.ts` — ownership/role checks live in the
+  route handlers themselves, not in the shared visibility filter.

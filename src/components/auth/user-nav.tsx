@@ -8,7 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -27,7 +26,7 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" className="gap-2">
+          <Button variant="outline" className="gap-2">
             <Avatar size="sm">
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
@@ -36,9 +35,13 @@ export function UserNav() {
         }
       />
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{role}</DropdownMenuLabel>
+        <div className="px-1.5 py-1 text-xs font-medium text-muted-foreground">{role}</div>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/admin">Admin dashboard</Link>} />
+        <DropdownMenuItem render={<Link href="/admin/approvals">Pending approvals</Link>} />
+        {role === "superadmin" && (
+          <DropdownMenuItem render={<Link href="/admin/users">Manage admins</Link>} />
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>

@@ -110,7 +110,11 @@ export default function UsersPage() {
               onValueChange={(department) => setForm({ ...form, department: department ?? "" })}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Department (optional)" />
+                <SelectValue placeholder="Department (optional)">
+                  {(id: string) =>
+                    departments.find((d) => d._id === id)?.name || "Department (optional)"
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {departments.map((d) => (

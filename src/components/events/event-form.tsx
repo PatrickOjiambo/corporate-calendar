@@ -48,6 +48,7 @@ const formSchema = z
     venue: z.string().min(1, "Venue is required"),
     organizerEmail: z.string().email("Enter a valid email"),
     meetingLink: z.string().url("Enter a valid URL").optional().or(z.literal("")),
+    customLocation: z.string().max(500).optional(),
     organizingDepartment: z.string().min(1, "Department is required"),
     category: z.enum(EVENT_CATEGORIES),
     audience: z.enum(EVENT_AUDIENCES),
@@ -59,7 +60,13 @@ const formSchema = z
   })
 
 type FormValues = z.infer<typeof formSchema>
-type Option = { _id: string; name: string; timezone?: string; isOnline?: boolean }
+type Option = {
+  _id: string
+  name: string
+  timezone?: string
+  isOnline?: boolean
+  allowsCustomLocation?: boolean
+}
 
 export function EventForm({
   mode,
@@ -96,6 +103,7 @@ export function EventForm({
       venue: "",
       organizerEmail: "",
       meetingLink: "",
+      customLocation: "",
       organizingDepartment: "",
       category: "Meeting",
       audience: "EntireOrganization",
@@ -112,6 +120,10 @@ export function EventForm({
   async function onSubmit(values: FormValues) {
     if (selectedVenue?.isOnline && !values.meetingLink) {
       form.setError("meetingLink", { message: "A meeting link is required for an online venue" })
+      return
+    }
+    if (selectedVenue?.allowsCustomLocation && !values.customLocation?.trim()) {
+      form.setError("customLocation", { message: "Location is required" })
       return
     }
 
@@ -132,6 +144,7 @@ export function EventForm({
       venue: values.venue,
       organizerEmail: values.organizerEmail,
       meetingLink: values.meetingLink || undefined,
+      customLocation: values.customLocation || undefined,
       organizingDepartment: values.organizingDepartment,
       category: values.category,
       audience: values.audience,
@@ -284,7 +297,9 @@ export function EventForm({
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a venue" />
+                    <SelectValue placeholder="Select a venue">
+                      {(id: string) => venues.find((v) => v._id === id)?.name || "Select a venue"}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -316,6 +331,22 @@ export function EventForm({
           />
         )}
 
+        {selectedVenue?.allowsCustomLocation && (
+          <FormField
+            control={form.control}
+            name="customLocation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Sarova Stanley Hotel, Nairobi" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="organizerEmail"
@@ -339,7 +370,11 @@ export function EventForm({
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a department" />
+                    <SelectValue placeholder="Select a department">
+                      {(id: string) =>
+                        departments.find((d) => d._id === id)?.name || "Select a department"
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

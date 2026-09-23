@@ -86,7 +86,9 @@ export default function VenuesPage() {
             />
             <Select value={timezone} onValueChange={(value) => value && setTimezone(value)}>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue>
+                  {(value: string) => SUBSIDIARY_TIMEZONES.find((tz) => tz.value === value)?.label}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {SUBSIDIARY_TIMEZONES.map((tz) => (

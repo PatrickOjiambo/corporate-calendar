@@ -15,7 +15,10 @@ export function ApprovalActions({ eventId }: { eventId: string }) {
   async function approve() {
     const res = await fetch(`/api/events/${eventId}/approve`, { method: "POST" })
     if (!res.ok) {
-      toast.error("Could not approve the event")
+      const body = await res.json().catch(() => null)
+      toast.error(`Could not approve the event (${res.status})`, {
+        description: body?.error ? JSON.stringify(body.error) : undefined,
+      })
       return
     }
     toast.success("Event approved")
@@ -29,7 +32,10 @@ export function ApprovalActions({ eventId }: { eventId: string }) {
       body: JSON.stringify({ reason }),
     })
     if (!res.ok) {
-      toast.error("Could not reject the event")
+      const body = await res.json().catch(() => null)
+      toast.error(`Could not reject the event (${res.status})`, {
+        description: body?.error ? JSON.stringify(body.error) : undefined,
+      })
       return
     }
     toast.success("Event rejected")

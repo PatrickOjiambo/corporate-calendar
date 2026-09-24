@@ -79,21 +79,22 @@ describe("toEventInput", () => {
     })
   })
 
-  it("assigns a color class based on the event id, not its category", () => {
+  it("assigns a background/border color based on the event id, not its category", () => {
     const input = toEventInput(baseEvent({ _id: "abc123", category: "SomeNewCategory" }))
-    expect(input.className).toMatch(/^bg-/)
+    expect(input.backgroundColor).toMatch(/^#[0-9a-f]{6}$/)
+    expect(input.borderColor).toBe(input.backgroundColor)
   })
 
   it("gives the same event the same color across renders (deterministic, not random each call)", () => {
     const a = toEventInput(baseEvent({ _id: "evt-42" }))
     const b = toEventInput(baseEvent({ _id: "evt-42" }))
-    expect(a.className).toBe(b.className)
+    expect(a.backgroundColor).toBe(b.backgroundColor)
   })
 
   it("gives different events different colors most of the time", () => {
     const colors = new Set(
       ["evt-1", "evt-2", "evt-3", "evt-4", "evt-5"].map(
-        (id) => toEventInput(baseEvent({ _id: id })).className
+        (id) => toEventInput(baseEvent({ _id: id })).backgroundColor
       )
     )
     expect(colors.size).toBeGreaterThan(1)

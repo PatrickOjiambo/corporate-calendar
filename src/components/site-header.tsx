@@ -8,7 +8,7 @@ export function SiteHeader() {
     <header className="border-b bg-background">
       <div className="h-1 bg-gradient-to-r from-brand-red via-brand-red to-brand-navy" />
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <Link href="/" className="flex items-center gap-4">
+        <Link href="https://intranet.kenyare.co.ke/" className="flex items-center gap-4">
           <Image
             src="/brand/kenya-re-logo.png"
             alt="Kenya Re"

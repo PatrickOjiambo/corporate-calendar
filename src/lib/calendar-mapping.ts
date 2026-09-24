@@ -9,19 +9,22 @@ import type { CalendarEvent } from "@/components/events/event-detail-dialog"
 // .fc-event background at runtime, which wins the cascade over a plain
 // className with equal specificity. backgroundColor/borderColor are applied
 // by FullCalendar as inline styles, which always win instead.
+// Lightened (mixed ~65% with white) from the theme's base 500/600 shades so
+// black event text stays readable — the base shades are saturated enough
+// that black text on them fails contrast.
 const EVENT_COLORS = [
-  "#3080ff", // blue-500
-  "#00bb7f", // emerald-500
-  "#ac4bff", // purple-500
-  "#f99c00", // amber-500
-  "#ff2357", // rose-500
-  "#0092b5", // cyan-600
-  "#e12afb", // fuchsia-500
-  "#625fff", // indigo-500
-  "#62a400", // lime-600
-  "#fe6e00", // orange-500
-  "#00baa7", // teal-500
-  "#f6339a", // pink-500
+  "#b7d3ff", // blue-500, lightened
+  "#a6e7d2", // emerald-500, lightened
+  "#e2c0ff", // purple-500, lightened
+  "#fddca6", // amber-500, lightened
+  "#ffb2c4", // rose-500, lightened
+  "#a6d9e5", // cyan-600, lightened
+  "#f5b4fe", // fuchsia-500, lightened
+  "#c8c7ff", // indigo-500, lightened
+  "#c8dfa6", // lime-600, lightened
+  "#ffcca6", // orange-500, lightened
+  "#a6e7e0", // teal-500, lightened
+  "#fcb8dc", // pink-500, lightened
 ]
 
 /** Deterministic per-event color: same event always gets the same color, picked from the palette by hashing its id. */

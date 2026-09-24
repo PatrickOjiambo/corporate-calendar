@@ -159,7 +159,8 @@
 }
 .fc .fc-event {
   border: none;
-  color: var(--primary-foreground);
+  color: #000;
+  font-weight: 700;
   cursor: pointer;
 }
 /* Desktop-only product — go big on the date numbers rather than tuning for mobile. */

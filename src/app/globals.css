@@ -164,7 +164,7 @@
 }
 /* Desktop-only product — go big on the date numbers rather than tuning for mobile. */
 .fc .fc-daygrid-day-number {
-  font-size: 1.35rem;
+  font-size: 2.025rem;
   font-weight: 600;
   padding: 6px 10px;
 }
@@ -180,6 +180,7 @@
 .fc .fc-toolbar-title {
   font-size: 1.75rem;
   font-weight: 700;
+  text-transform: uppercase;
 }
 .fc .fc-multimonth-title {
   font-size: 1.1rem;

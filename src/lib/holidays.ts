@@ -17,6 +17,16 @@ export type PublicHoliday = {
   countries: string[] // display names, e.g. ["Kenya", "Uganda"]
 }
 
+// date-holidays' bundled data lags behind real-world renames/law changes.
+// Corrections go here, keyed by country code -> the library's (outdated)
+// name -> the current name, rather than patching node_modules (which
+// pnpm install would overwrite anyway).
+const NAME_OVERRIDES: Record<string, Record<string, string>> = {
+  // Kenya renamed Moi Day (Oct 10) to Mazingira Day (Environment Day) via
+  // the Public Holidays (Amendment) Act - the library still calls it Moi Day.
+  KE: { "Moi Day": "Mazingira Day" },
+}
+
 /**
  * Public holidays across all four countries, from `fromYear` to `toYear`
  * inclusive, merged so a holiday landing on the same date with the same
@@ -33,12 +43,13 @@ export function getPublicHolidays(fromYear: number, toYear: number): PublicHolid
       for (const h of hd.getHolidays(year)) {
         if (h.type !== "public") continue
         const date = h.date.slice(0, 10)
-        const key = `${date}__${h.name}`
+        const name = NAME_OVERRIDES[code]?.[h.name] ?? h.name
+        const key = `${date}__${name}`
         const existing = merged.get(key)
         if (existing) {
           existing.countries.push(countryName)
         } else {
-          merged.set(key, { date, name: h.name, countries: [countryName] })
+          merged.set(key, { date, name, countries: [countryName] })
         }
       }
     }

@@ -37,4 +37,12 @@ describe("getPublicHolidays", () => {
     const ashWednesday = holidays.find((h) => h.name === "Ash Wednesday")
     expect(ashWednesday).toBeUndefined()
   })
+
+  it("applies the Moi Day -> Mazingira Day rename for Kenya (Oct 10)", () => {
+    const holidays = getPublicHolidays(2026, 2026)
+    expect(holidays.find((h) => h.name === "Moi Day")).toBeUndefined()
+    const mazingira = holidays.find((h) => h.date === "2026-10-10" && h.name === "Mazingira Day")
+    expect(mazingira).toBeDefined()
+    expect(mazingira!.countries).toEqual(["Kenya"])
+  })
 })

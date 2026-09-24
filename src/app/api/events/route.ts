@@ -23,18 +23,23 @@ export async function GET(request: Request) {
     filter.status = status
   }
   if (from || to) {
-    const range: Record<string, Date> = {}
-    if (from) range.$gte = new Date(from)
-    if (to) range.$lte = new Date(to)
+    const fromDate = from ? new Date(from) : undefined
+    const toDate = to ? new Date(to) : undefined
 
     // A malformed/under-encoded query (e.g. a literal "+" decoded as a space
     // in a timezone offset) produces an Invalid Date, which would otherwise
     // crash Mongoose's cast with a 500 — fail cleanly with 400 instead.
-    if (Object.values(range).some((d) => Number.isNaN(d.getTime()))) {
+    if ([fromDate, toDate].some((d) => d && Number.isNaN(d.getTime()))) {
       return NextResponse.json({ error: "Invalid from/to date" }, { status: 400 })
     }
 
-    filter.startAt = range
+    // Overlap, not containment: a multi-day event's startAt only falls in the
+    // FIRST day's window, so filtering by "startAt in [from, to]" alone drops
+    // it from every later day's fetch — exactly what a narrow Day-view range
+    // hits for day 2+ of a 3-day event, even though Month/Week's wider range
+    // happens to still contain day 1's startAt and hides the bug there.
+    if (toDate) filter.startAt = { $lte: toDate }
+    if (fromDate) filter.endAt = { $gte: fromDate }
   }
 
   const events = await Event.find(filter)

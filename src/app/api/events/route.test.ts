@@ -166,6 +166,63 @@ describe("GET /api/events", () => {
     const body = await res.json()
     expect(body.map((e: { title: string }) => e.title)).toEqual(["Pending event"])
   })
+
+  describe("multi-day event visibility in a narrow (Day view) date range", () => {
+    it("returns a 3-day event when the requested range is only its LAST day (regression: startAt-only filtering dropped it)", async () => {
+      mockAuth.mockResolvedValue(null)
+      const { ict, venue } = await seedFixture()
+      // A 3-day event: Oct 7 09:00 - Oct 9 17:00. Its startAt is only ever
+      // inside a Day-view range for Oct 7 — filtering purely by
+      // "startAt in [from, to]" (the original bug) makes it invisible on
+      // Oct 8 and Oct 9's Day view, even though Month/Week views show it
+      // fine because their wider range still contains Oct 7's startAt.
+      await Event.create({
+        title: "AI Hackathon",
+        status: "Approved",
+        audience: "EntireOrganization",
+        venue: venue._id,
+        organizingDepartment: ict._id,
+        category: "Conference",
+        startAt: new Date("2026-10-07T06:00:00Z"),
+        endAt: new Date("2026-10-09T14:00:00Z"),
+        timezone: "Africa/Nairobi",
+        organizerEmail: "organizer@kenyare.co.ke",
+      })
+
+      // Day view for the LAST day only: Oct 9 00:00 - Oct 10 00:00.
+      const params = new URLSearchParams({
+        from: "2026-10-09T00:00:00Z",
+        to: "2026-10-10T00:00:00Z",
+      })
+      const res = await GET(new Request(`http://localhost/api/events?${params}`))
+      const body = await res.json()
+      expect(body.map((e: { title: string }) => e.title)).toEqual(["AI Hackathon"])
+    })
+
+    it("does not return an event that ended before the requested range starts", async () => {
+      mockAuth.mockResolvedValue(null)
+      const { ict, venue } = await seedFixture()
+      await Event.create({
+        title: "Long-past event",
+        status: "Approved",
+        audience: "EntireOrganization",
+        venue: venue._id,
+        organizingDepartment: ict._id,
+        category: "Meeting",
+        startAt: new Date("2026-01-01T05:00:00Z"),
+        endAt: new Date("2026-01-01T06:00:00Z"),
+        timezone: "Africa/Nairobi",
+        organizerEmail: "organizer@kenyare.co.ke",
+      })
+
+      const params = new URLSearchParams({
+        from: "2026-10-09T00:00:00Z",
+        to: "2026-10-10T00:00:00Z",
+      })
+      const res = await GET(new Request(`http://localhost/api/events?${params}`))
+      expect(await res.json()).toEqual([])
+    })
+  })
 })
 
 describe("POST /api/events", () => {

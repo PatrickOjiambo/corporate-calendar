@@ -1,7 +1,15 @@
 import type { EventInput } from "@fullcalendar/core"
 import { addDays } from "date-fns"
 import type { CalendarEvent } from "@/components/events/event-detail-dialog"
-import type { PublicHoliday } from "@/lib/holidays"
+import { HOLIDAY_COUNTRIES, type PublicHoliday } from "@/lib/holidays"
+
+// Reverse lookup (display name -> ISO code) so holiday banners can show the
+// short code instead of the full country name - some holiday names are
+// already long, and spelling out multiple full country names on top of that
+// doesn't fit well on a calendar bar.
+const COUNTRY_CODE_BY_NAME = Object.fromEntries(
+  Object.entries(HOLIDAY_COUNTRIES).map(([code, name]) => [name, code])
+)
 
 // A palette of distinct, readable colors — one is assigned per event (not
 // per category) so a busy day doesn't turn into a wall of same-colored bars.
@@ -35,6 +43,13 @@ function colorForEvent(id: string): string {
   return EVENT_COLORS[Math.abs(hash) % EVENT_COLORS.length]
 }
 
+/** Same venue/location logic as the event detail dialog, so the banner and the dialog never disagree. */
+function venueLabel(event: CalendarEvent): string | null {
+  if (!event.venue) return null
+  if (event.venue.allowsCustomLocation && event.customLocation) return event.customLocation
+  return `${event.venue.name}${event.venue.location ? `, ${event.venue.location}` : ""}`
+}
+
 /**
  * Maps an API event to FullCalendar's EventInput shape.
  *
@@ -46,9 +61,10 @@ function colorForEvent(id: string): string {
  */
 export function toEventInput(event: CalendarEvent): EventInput {
   const color = colorForEvent(event._id)
+  const venue = venueLabel(event)
   return {
     id: event._id,
-    title: event.title,
+    title: venue ? `${event.title}, ${venue}` : event.title,
     start: event.startAt,
     end: event.allDay ? addDays(new Date(event.endAt), 1) : event.endAt,
     allDay: event.allDay,
@@ -69,10 +85,9 @@ const HOLIDAY_COLOR = "#e5e7eb"
  * adjustment as allDay events in toEventInput above.
  */
 export function holidayToEventInput(holiday: PublicHoliday): EventInput {
+  const codes = holiday.countries.map((c) => COUNTRY_CODE_BY_NAME[c] ?? c)
   const title =
-    holiday.countries.length > 1
-      ? `${holiday.name} — ${holiday.countries.join(", ")}`
-      : `${holiday.name} (${holiday.countries[0]})`
+    codes.length > 1 ? `${holiday.name} — ${codes.join(", ")}` : `${holiday.name} (${codes[0]})`
   return {
     id: `holiday-${holiday.date}-${holiday.name}`,
     title,

@@ -111,6 +111,33 @@ describe("toEventInput", () => {
     const input = toEventInput(baseEvent({ _id: "abc123" }))
     expect(input.id).toBe("abc123")
   })
+
+  it("leaves the title unchanged when the event has no venue", () => {
+    const input = toEventInput(baseEvent())
+    expect(input.title).toBe("Board Meeting")
+  })
+
+  it("appends the venue name to the title with a comma", () => {
+    const input = toEventInput(baseEvent({ venue: { name: "Kenya Re Academy" } }))
+    expect(input.title).toBe("Board Meeting, Kenya Re Academy")
+  })
+
+  it("appends the venue's location too when present", () => {
+    const input = toEventInput(
+      baseEvent({ venue: { name: "Kenya Re Academy", location: "Nairobi, Kenya" } })
+    )
+    expect(input.title).toBe("Board Meeting, Kenya Re Academy, Nairobi, Kenya")
+  })
+
+  it("appends the custom location instead of the generic venue name for an 'Other' venue", () => {
+    const input = toEventInput(
+      baseEvent({
+        venue: { name: "Other", allowsCustomLocation: true },
+        customLocation: "Radisson Blu Hotel, Abidjan",
+      })
+    )
+    expect(input.title).toBe("Board Meeting, Radisson Blu Hotel, Abidjan")
+  })
 })
 
 describe("holidayToEventInput", () => {
@@ -131,16 +158,16 @@ describe("holidayToEventInput", () => {
     expect(new Date(input.end as Date).toISOString()).toBe("2026-12-26T00:00:00.000Z")
   })
 
-  it("shows a single country in parentheses", () => {
+  it("shows a single country as its short code in parentheses", () => {
     const input = holidayToEventInput(holiday({ name: "Jamhuri Day", countries: ["Kenya"] }))
-    expect(input.title).toBe("Jamhuri Day (Kenya)")
+    expect(input.title).toBe("Jamhuri Day (KE)")
   })
 
-  it("lists multiple countries when the holiday is shared", () => {
+  it("lists multiple countries as short codes when the holiday is shared", () => {
     const input = holidayToEventInput(
       holiday({ name: "Christmas Day", countries: ["Kenya", "Uganda", "Zambia"] })
     )
-    expect(input.title).toBe("Christmas Day — Kenya, Uganda, Zambia")
+    expect(input.title).toBe("Christmas Day — KE, UG, ZM")
   })
 
   it("uses a distinct neutral color, not one from the per-event palette", () => {

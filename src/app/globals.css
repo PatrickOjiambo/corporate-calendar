@@ -163,6 +163,18 @@
   font-weight: 700;
   cursor: pointer;
 }
+/* FullCalendar's own injected default stylesheet sets .fc-event-title's color
+   directly (white, for its own dark default event background) with equal or
+   higher specificity depending on injection order, which wins the cascade
+   over the rule above targeting the parent .fc-event alone. !important is the
+   only reliable way to guarantee this against a stylesheet FullCalendar
+   controls, not us — verified: without it, the outer .fc-event correctly
+   computed black but .fc-event-title still rendered white regardless. */
+.fc .fc-event .fc-event-title,
+.fc .fc-event .fc-event-time {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
 /* Desktop-only product — go big on the date numbers rather than tuning for mobile. */
 .fc .fc-daygrid-day-number {
   font-size: 2.025rem;

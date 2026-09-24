@@ -154,8 +154,21 @@
   --fc-neutral-bg-color: var(--muted);
   --fc-list-event-hover-bg-color: var(--muted);
   --fc-page-bg-color: var(--background);
-  --fc-today-bg-color: color-mix(in oklch, var(--brand-red) 8%, var(--background));
+  /* Was 8% - nearly invisible. Bumped up and paired with an inset ring below
+     so "today" reads clearly at a glance rather than needing a second look. */
+  --fc-today-bg-color: color-mix(in oklch, var(--brand-red) 22%, var(--background));
   font-family: var(--font-sans);
+}
+.fc .fc-day-today {
+  box-shadow: inset 0 0 0 2px var(--brand-red);
+}
+/* Weekends get a subtle distinct shade so they read apart from weekdays at a
+   glance. Comes before .fc-day-today in source order so a weekend that's
+   also today still shows the (later-injected, equal-specificity) today
+   highlight on top rather than this one. */
+.fc .fc-day-sat,
+.fc .fc-day-sun {
+  background-color: var(--muted);
 }
 .fc .fc-event {
   border: none;

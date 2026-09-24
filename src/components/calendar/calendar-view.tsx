@@ -10,7 +10,8 @@ import interactionPlugin from "@fullcalendar/interaction"
 import type { EventClickArg } from "@fullcalendar/core"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EventDetailDialog, type CalendarEvent } from "@/components/events/event-detail-dialog"
-import { toEventInput } from "@/lib/calendar-mapping"
+import { toEventInput, holidayToEventInput } from "@/lib/calendar-mapping"
+import type { PublicHoliday } from "@/lib/holidays"
 
 const VIEW_MAP = {
   year: "multiMonthYear",
@@ -33,6 +34,7 @@ export function CalendarView() {
   }
 
   function handleEventClick(info: EventClickArg) {
+    if (info.event.extendedProps.isHoliday) return
     setSelected(info.event.extendedProps as CalendarEvent)
   }
 
@@ -61,9 +63,13 @@ export function CalendarView() {
           // and an un-encoded "+" in a query string is decoded as a space, corrupting the
           // date and causing every request to 500 for anyone in a positive-offset timezone.
           const params = new URLSearchParams({ from: fetchInfo.startStr, to: fetchInfo.endStr })
-          fetch(`/api/events?${params}`)
-            .then((res) => res.json())
-            .then((events: CalendarEvent[]) => successCallback(events.map(toEventInput)))
+          Promise.all([
+            fetch(`/api/events?${params}`).then((res) => res.json()) as Promise<CalendarEvent[]>,
+            fetch(`/api/holidays?${params}`).then((res) => res.json()) as Promise<PublicHoliday[]>,
+          ])
+            .then(([events, holidays]) =>
+              successCallback([...events.map(toEventInput), ...holidays.map(holidayToEventInput)])
+            )
             .catch(failureCallback)
         }}
       />

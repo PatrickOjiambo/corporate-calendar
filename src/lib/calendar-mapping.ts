@@ -1,6 +1,7 @@
 import type { EventInput } from "@fullcalendar/core"
 import { addDays } from "date-fns"
 import type { CalendarEvent } from "@/components/events/event-detail-dialog"
+import type { PublicHoliday } from "@/lib/holidays"
 
 // A palette of distinct, readable colors — one is assigned per event (not
 // per category) so a busy day doesn't turn into a wall of same-colored bars.
@@ -54,5 +55,34 @@ export function toEventInput(event: CalendarEvent): EventInput {
     backgroundColor: color,
     borderColor: color,
     extendedProps: event,
+  }
+}
+
+// Neutral, deliberately unsaturated styling — visually distinct from the
+// vibrant per-event palette above, so a holiday reads as "not a Kenya Re
+// event" at a glance rather than competing with real organizational events.
+const HOLIDAY_COLOR = "#e5e7eb"
+
+/**
+ * Maps a public holiday to FullCalendar's EventInput shape. Holidays are
+ * single-day allDay entries, so `end` needs the same +1 day exclusive-end
+ * adjustment as allDay events in toEventInput above.
+ */
+export function holidayToEventInput(holiday: PublicHoliday): EventInput {
+  const title =
+    holiday.countries.length > 1
+      ? `${holiday.name} — ${holiday.countries.join(", ")}`
+      : `${holiday.name} (${holiday.countries[0]})`
+  return {
+    id: `holiday-${holiday.date}-${holiday.name}`,
+    title,
+    start: holiday.date,
+    end: addDays(new Date(holiday.date), 1),
+    allDay: true,
+    backgroundColor: HOLIDAY_COLOR,
+    borderColor: HOLIDAY_COLOR,
+    textColor: "#000",
+    editable: false,
+    extendedProps: { isHoliday: true, countries: holiday.countries },
   }
 }

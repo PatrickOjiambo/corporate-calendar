@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { toEventInput } from "@/lib/calendar-mapping"
+import { toEventInput, holidayToEventInput } from "@/lib/calendar-mapping"
 import type { CalendarEvent } from "@/components/events/event-detail-dialog"
+import type { PublicHoliday } from "@/lib/holidays"
 
 function baseEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
   return {
@@ -109,5 +110,41 @@ describe("toEventInput", () => {
   it("uses the Mongo _id as the FullCalendar event id", () => {
     const input = toEventInput(baseEvent({ _id: "abc123" }))
     expect(input.id).toBe("abc123")
+  })
+})
+
+describe("holidayToEventInput", () => {
+  function holiday(overrides: Partial<PublicHoliday> = {}): PublicHoliday {
+    return { date: "2026-01-01", name: "New Year's Day", countries: ["Kenya"], ...overrides }
+  }
+
+  it("marks the entry as a non-editable, allDay holiday", () => {
+    const input = holidayToEventInput(holiday())
+    expect(input.allDay).toBe(true)
+    expect(input.editable).toBe(false)
+    expect(input.extendedProps).toEqual({ isHoliday: true, countries: ["Kenya"] })
+  })
+
+  it("adds one day to the single date for FullCalendar's exclusive end", () => {
+    const input = holidayToEventInput(holiday({ date: "2026-12-25" }))
+    expect(input.start).toBe("2026-12-25")
+    expect(new Date(input.end as Date).toISOString()).toBe("2026-12-26T00:00:00.000Z")
+  })
+
+  it("shows a single country in parentheses", () => {
+    const input = holidayToEventInput(holiday({ name: "Jamhuri Day", countries: ["Kenya"] }))
+    expect(input.title).toBe("Jamhuri Day (Kenya)")
+  })
+
+  it("lists multiple countries when the holiday is shared", () => {
+    const input = holidayToEventInput(
+      holiday({ name: "Christmas Day", countries: ["Kenya", "Uganda", "Zambia"] })
+    )
+    expect(input.title).toBe("Christmas Day — Kenya, Uganda, Zambia")
+  })
+
+  it("uses a distinct neutral color, not one from the per-event palette", () => {
+    const input = holidayToEventInput(holiday())
+    expect(input.backgroundColor).toBe("#e5e7eb")
   })
 })
